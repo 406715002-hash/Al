@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Froggy Jump - Kata Kerja</title>
+<style>
+:root{
+  --bg1:#c9f3ff;--bg2:#e5ffd8;--text:#21452d;--sub:#52755b;--panel:#ffffff;--shadow:#b5d9b0;
+  --stat:#effbe9;--sky:#a5e9ff;--ground:#79d5a0;--pond:#45c99b;--pond-b:#23966d;
+  --accent:#23834e;--btn:#258b4e;--btn-h:#176c39;--choice-bg:#f8fff5;--choice-b:#d5eed0;--choice-h:#e4fbdc;
+  --choice-t:#2b5937;--ok-bg:#c9f7c5;--ok-b:#35ad52;--bad-bg:#ffe0df;--bad-b:#ed7777;--muted:#64796a;--small:#718273;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg1:#0f2a33;--bg2:#14301f;--text:#d8f2de;--sub:#9cc3a6;--panel:#1b2f24;--shadow:#0c1a12;
+    --stat:#243c2c;--sky:#1d4a5e;--ground:#2f7a55;--pond:#2b9c78;--pond-b:#176e50;
+    --accent:#7be0a0;--btn:#2f9e5c;--btn-h:#3bb36d;--choice-bg:#223a2a;--choice-b:#35563f;--choice-h:#2c4a35;
+    --choice-t:#d8f2de;--ok-bg:#1f5a33;--ok-b:#4fcf78;--bad-bg:#5a2626;--bad-b:#e06666;--muted:#a3bba9;--small:#8aa392;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg1:#0f2a33;--bg2:#14301f;--text:#d8f2de;--sub:#9cc3a6;--panel:#1b2f24;--shadow:#0c1a12;
+  --stat:#243c2c;--sky:#1d4a5e;--ground:#2f7a55;--pond:#2b9c78;--pond-b:#176e50;
+  --accent:#7be0a0;--btn:#2f9e5c;--btn-h:#3bb36d;--choice-bg:#223a2a;--choice-b:#35563f;--choice-h:#2c4a35;
+  --choice-t:#d8f2de;--ok-bg:#1f5a33;--ok-b:#4fcf78;--bad-bg:#5a2626;--bad-b:#e06666;--muted:#a3bba9;--small:#8aa392;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;font-family:"Trebuchet MS","Noto Sans Thai","Sarabun",sans-serif;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));background-color:var(--bg2);color:var(--text);text-align:center}
+.app{max-width:760px;margin:auto;padding:20px 15px 35px}
+h1{font-size:clamp(26px,6vw,42px);margin:8px 0}
+.subtitle{color:var(--sub);margin-bottom:18px}
+.panel{background:var(--panel);border-radius:24px;padding:20px;box-shadow:0 6px 0 var(--shadow);margin:15px 0}
+.stats{display:flex;justify-content:space-around;gap:10px;font-weight:bold}
+.stat{background:var(--stat);padding:10px;border-radius:14px;flex:1}
+#scene{position:relative;height:220px;overflow:hidden;border-radius:20px;
+  background:linear-gradient(var(--sky) 0 65%,var(--ground) 65%);margin:18px 0}
+.cloud{position:absolute;font-size:32px;animation:float 5s ease-in-out infinite alternate}
+.c1{left:12%;top:15px}.c2{right:12%;top:48px}
+@keyframes float{to{transform:translateX(20px)}}
+.pond{position:absolute;bottom:20px;width:78px;height:35px;border-radius:50%;background:var(--pond);border:3px solid var(--pond-b)}
+.p1{left:12%}.p2{left:40%}.p3{right:12%}
+#frog{position:absolute;left:12%;bottom:43px;font-size:48px;z-index:2;transition:left .45s ease,bottom .35s ease}
+.jump{animation:jump .45s ease}
+@keyframes jump{50%{transform:translateY(-75px) rotate(10deg)}}
+#questionNumber{color:var(--sub);font-weight:bold}
+#scramble{font-size:clamp(25px,7vw,38px);font-weight:900;letter-spacing:5px;color:var(--accent);margin:12px 0;overflow-wrap:anywhere}
+.instruction{color:var(--muted)}
+.choices{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
+.choice{border:3px solid var(--choice-b);border-radius:16px;background:var(--choice-bg);padding:14px;font-size:18px;font-weight:bold;
+  color:var(--choice-t);cursor:pointer;transition:.15s;font-family:inherit}
+.choice:hover:not(:disabled){background:var(--choice-h);transform:translateY(-2px)}
+.choice:disabled{cursor:default}
+.choice.correct{background:var(--ok-bg);border-color:var(--ok-b)}
+.choice.wrong{background:var(--bad-bg);border-color:var(--bad-b)}
+#feedback{min-height:32px;font-weight:bold;margin-top:15px}
+button.main{border:none;border-radius:16px;background:var(--btn);color:#fff;padding:14px 25px;font-size:17px;font-weight:bold;
+  cursor:pointer;margin-top:12px;font-family:inherit}
+button.main:hover{background:var(--btn-h)}
+.hidden{display:none!important}
+#resultEmoji{font-size:65px}
+.final{font-size:25px;font-weight:bold;color:var(--accent)}
+.small{font-size:13px;color:var(--small)}
+@media(min-width:520px){.choices{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div style="font-size:35px">🐸 🍃 🪷</div>
+  <h1>Froggy Jump</h1>
+  <div class="subtitle">Kata Kerja · คำกริยาภาษามลายู</div>
+
+  <section id="start" class="panel">
+    <div style="font-size:75px">🐸</div>
+    <h2>พร้อมกระโดดหรือยัง?</h2>
+    <p>ช่วยเจ้ากบเลือกคำกริยาภาษามลายูให้ถูกต้อง!</p>
+    <p>ตอบถูกเพื่อสะสมคะแนนและพาเจ้ากบข้ามใบบัวทั้ง 9 ข้อ</p>
+    <button class="main" id="startBtn">เริ่มเล่นเกม ▶</button>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="panel stats">
+      <div class="stat">⭐ คะแนน<br><span id="score">0</span></div>
+      <div class="stat">📍 ข้อ<br><span id="progress">1/9</span></div>
+      <div class="stat">❤️ ถูก<br><span id="correctCount">0</span></div>
+    </div>
+    <div id="scene">
+      <span class="cloud c1">☁️</span><span class="cloud c2">☁️</span>
+      <div class="pond p1"></div><div class="pond p2"></div><div class="pond p3"></div>
+      <div id="frog">🐸</div>
+    </div>
+    <div class="panel">
+      <div id="questionNumber">QUESTION 1</div>
+      <h2>คำใดสะกดถูกต้อง?</h2>
+      <div id="scramble">M-a-k-a-n</div>
+      <div class="instruction">เลือกคำตอบที่ตรงกับตัวอักษรด้านบน</div>
+      <div id="choices" class="choices"></div>
+      <div id="feedback" aria-live="polite"></div>
+      <button id="next" class="main hidden">ข้อต่อไป ➜</button>
+    </div>
+  </section>
+
+  <section id="result" class="panel hidden">
+    <div id="resultEmoji">🏆</div>
+    <h2 id="resultTitle">เก่งมาก!</h2>
+    <p id="resultText"></p>
+    <div class="final"><span id="finalScore">0</span> / 90 คะแนน</div>
+    <p id="finalCorrect"></p>
+    <button class="main" id="againBtn">🔄 เล่นอีกครั้ง</button>
+  </section>
+
+  <p class="small">Belajar sambil bermain! 🌱 เรียนรู้ผ่านการเล่น</p>
+</div>
+
+<script>
+const questions = [
+  {word:"Makan",scramble:"M-a-k-a-n",choices:["Makan","Malam","Malas"],meaning:"กิน"},
+  {word:"Minum",scramble:"M-i-n-u-m",choices:["Minat","Minum","Minium"],meaning:"ดื่ม"},
+  {word:"Mandi",scramble:"M-a-n-d-i",choices:["Mandi","Minda","Mandar"],meaning:"อาบน้ำ"},
+  {word:"Tidur",scramble:"T-i-d-u-r",choices:["Tikar","Tidor","Tidur"],meaning:"นอนหลับ"},
+  {word:"Menulis",scramble:"M-e-n-u-l-i-s",choices:["Menangis","Menulis","Melukis"],meaning:"เขียน"},
+  {word:"Berlari",scramble:"B-e-r-l-a-r-i",choices:["Berdiri","Berhenti","Berlari"],meaning:"วิ่ง"},
+  {word:"Membaca",scramble:"M-e-m-b-a-c-a",choices:["Membaca","Membawa","Membalas"],meaning:"อ่าน"},
+  {word:"Berjalan",scramble:"B-e-r-j-a-l-a-n",choices:["Berjualan","Berjalan","Berlainan"],meaning:"เดิน"},
+  {word:"Memasak",scramble:"M-e-m-a-s-a-k",choices:["Memakai","Memasang","Memasak"],meaning:"ทำอาหาร"}
+];
+
+let order = [], index = 0, score = 0, correct = 0, answered = false;
+const $ = id => document.getElementById(id);
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startGame(){
+  order = shuffle(questions);
+  index = 0; score = 0; correct = 0;
+  $("start").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  showQuestion();
+}
+
+function showQuestion(){
+  answered = false;
+  const q = order[index];
+  $("score").textContent = score;
+  $("progress").textContent = `${index+1}/${order.length}`;
+  $("correctCount").textContent = correct;
+  $("questionNumber").textContent = `QUESTION ${index+1}`;
+  $("scramble").textContent = q.scramble;
+  $("feedback").textContent = "";
+  $("next").classList.add("hidden");
+  const frog = $("frog");
+  frog.style.left = "12%";
+  frog.style.bottom = "43px";
+  const box = $("choices");
+  box.innerHTML = "";
+  shuffle(q.choices).forEach((choice,i)=>{
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.dataset.choice = choice;
+    b.textContent = `${String.fromCharCode(65+i)}. ${choice}`;
+    b.onclick = () => checkAnswer(choice,b);
+    box.appendChild(b);
+  });
+}
+
+function checkAnswer(choice,button){
+  if(answered) return;
+  answered = true;
+  const q = order[index];
+  const buttons = [...document.querySelectorAll(".choice")];
+  buttons.forEach(b => b.disabled = true);
+  const frog = $("frog");
+  frog.classList.remove("jump");
+  void frog.offsetWidth;
+  frog.classList.add("jump");
+  if(choice === q.word){
+    score += 10; correct++;
+    button.classList.add("correct");
+    $("feedback").textContent = `🎉 Betul! ถูกต้อง! ${q.word} = ${q.meaning}`;
+    frog.style.left = ["12%","40%","72%"][index % 3];
+    frog.style.bottom = "95px";
+  } else {
+    button.classList.add("wrong");
+    const ok = buttons.find(b => b.dataset.choice === q.word);
+    if(ok) ok.classList.add("correct");
+    $("feedback").textContent = `ยังไม่ถูกนะ 😊 คำตอบคือ ${q.word} = ${q.meaning}`;
+  }
+  $("score").textContent = score;
+  $("correctCount").textContent = correct;
+  const next = $("next");
+  next.textContent = index === order.length-1 ? "ดูผลคะแนน 🏆" : "ข้อต่อไป ➜";
+  next.classList.remove("hidden");
+}
+
+function nextQuestion(){
+  index++;
+  if(index < order.length) showQuestion(); else showResult();
+}
+
+function showResult(){
+  $("game").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  let emoji = "🌱", title = "พยายามได้ดีมาก!";
+  if(score >= 80){ emoji = "🏆"; title = "สุดยอด! Hebat!"; }
+  else if(score >= 50){ emoji = "🥳"; title = "เก่งมาก! Bagus!"; }
+  $("resultEmoji").textContent = emoji;
+  $("resultTitle").textContent = title;
+  $("resultText").textContent = `ทำคะแนนได้ ${score} จาก 90 คะแนน`;
+  $("finalScore").textContent = score;
+  $("finalCorrect").textContent = `ตอบถูก ${correct} จาก ${order.length} ข้อ`;
+}
+
+$("startBtn").onclick = startGame;
+$("againBtn").onclick = startGame;
+$("next").onclick = nextQuestion;
+</script>
+</body>
+</html>
